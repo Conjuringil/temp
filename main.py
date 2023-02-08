@@ -9,7 +9,6 @@ mongo = MongoClient("mongodb+srv://vercel-admin-user:OG63gOiWzBd6CSHr@cluster0.n
 usersCollection = mongo.test.users
 hasher = PasswordHasher()
 yes = ["yes", "y", "Yes", "Y"]
-no = ["no", "n", "No", "N"]
 
 def parse_json(data):
     return json.loads(json_util.dumps(data))
