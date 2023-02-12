@@ -5,17 +5,22 @@ from argon2 import PasswordHasher
 import os
 from difflib import SequenceMatcher
 
+# connect to mongoDB
 mongo = MongoClient("mongodb+srv://vercel-admin-user:OG63gOiWzBd6CSHr@cluster0.nzeny4x.mongodb.net/?retryWrites=true&w=majority")
+# get users collection
 usersCollection = mongo.test.users
 hasher = PasswordHasher()
 yes = ["yes", "y", "Yes", "Y"]
 
+# convert BSON to JSON
 def parse_json(data):
     return json.loads(json_util.dumps(data))
 
+# find the ratio of the users name and password
 def similar(name, password):
     return SequenceMatcher(name, password).ratio() > 0.8
 
+# rates the password based on a number of factors
 def rate_password(password):
     points = 0
     if len(password) >= 8:
@@ -32,6 +37,7 @@ def rate_password(password):
         points += 1
     return points
 
+# register a user
 def register(name, email, password):
     user = usersCollection.find_one({ "email": email })
     if user:
@@ -41,6 +47,7 @@ def register(name, email, password):
     usersCollection.insert_one(user)
     return "User created successfully"
 
+# change a users password
 def change_password(email, password):
     user = usersCollection.find_one({ "email": email })
     if not user:
@@ -49,16 +56,19 @@ def change_password(email, password):
     usersCollection.update_one({ "_id": user["_id"] }, { "$set": { "password": hashed_password } })
     return "Password changed successfully"
 
+# propmt selection
 print("1) Create a new user")
 print("2) Change a password")
 print("3) Display all users")
 print("4) Quit")
 selection = input("Enter Selection: ")
 
+# validate selection
 while not selection.isdigit() or int(selection) not in range(1, 6):
     print("Invalid selection")
     selection = input("Enter Selection: ")
 
+# create new user if user selects 1
 if int(selection) == 1:
     name = input("Enter name: ")
     email = input("Enter email: ")
@@ -80,6 +90,7 @@ if int(selection) == 1:
     if rate_password(password) >= 5:
         print("This is a strong password.")
     print(register(name, email, password))
+# change password if user selects 2
 elif int(selection) == 2:
     email = input("Enter email: ")
     if not usersCollection.find_one({ "email": email }):
@@ -100,8 +111,10 @@ elif int(selection) == 2:
     if rate_password(password) >= 5:
         print("This is a strong password.")
     print(change_password(email, password))
+# print all users if they select 3
 elif int(selection) == 3:
     for user in usersCollection.find():
         print(parse_json(user))
+# end program if user selects 4
 elif int(selection) == 4:
     exit()
